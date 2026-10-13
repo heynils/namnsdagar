@@ -23,7 +23,8 @@ USER_AGENT = "namnsdagar/1.0 (https://github.com/heynils/namnsdagar)"
 FEED_URL = "https://heynils.github.io/namnsdagar/namnsdagar.ics"
 UID_DOMAIN = "heynils.github.io"
 BASE_YEAR = 2022  # nuvarande namnlängd gäller från 2022
-DTSTAMP = "20220101T000000Z"  # fast värde så att filen blir deterministisk
+DTSTAMP = "20261013T000000Z"  # fast värde så att filen blir deterministisk
+SEQUENCE = 1  # öka när befintliga händelser ändras, så att kalendrar hämtar om dem
 EXPECTED_DAYS = 359  # 366 dagar minus 7 dagar utan namnsdag
 
 MONTHS = {
@@ -116,10 +117,11 @@ def build_ics(days: dict[str, list[str]]) -> str:
             "BEGIN:VEVENT",
             f"UID:namnsdag-{key.replace('-', '')}@{UID_DOMAIN}",
             f"DTSTAMP:{DTSTAMP}",
+            f"SEQUENCE:{SEQUENCE}",
             f"DTSTART;VALUE=DATE:{start:%Y%m%d}",
             f"DTEND;VALUE=DATE:{end:%Y%m%d}",
             "RRULE:FREQ=YEARLY",
-            "SUMMARY:" + escape("Namnsdag: " + ", ".join(names)),
+            "SUMMARY:" + escape(", ".join(names)),
             "TRANSP:TRANSPARENT",
             "END:VEVENT",
         ]

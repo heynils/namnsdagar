@@ -12,7 +12,7 @@ Svenska namnsdagar som en kalenderfeed (iCalendar) du kan prenumerera på i Appl
 | Google Kalender | [Lägg till via länk](https://calendar.google.com/calendar/r?cid=webcal%3A%2F%2Fheynils.github.io%2Fnamnsdagar%2Fnamnsdagar.ics) |
 | Övriga | Lägg till kalender från internet med adressen `https://heynils.github.io/namnsdagar/namnsdagar.ics` |
 
-Varje dag med namnsdag är en heldagshändelse, till exempel *Namnsdag: Berit, Birgit*. Händelserna upprepas årligen och är markerade som lediga, så de blockerar inte din tid. Dagar utan namnsdag (till exempel juldagen och skottdagen) saknar händelse.
+Varje dag med namnsdag är en heldagshändelse, till exempel *Berit, Birgit*. Händelserna upprepas årligen och är markerade som lediga, så de blockerar inte din tid. Dagar utan namnsdag (till exempel juldagen och skottdagen) saknar händelse.
 
 ## Uppdatera data
 
