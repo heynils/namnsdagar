@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Namnsdagar</title>
+  <meta name="description" content="Prenumerera på svenska namnsdagar i Apple Kalender, Google Kalender eller Outlook.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+  <style>
+    :root {
+      --bg: #f7f5f0;
+      --surface: #ffffff;
+      --text: #1d1d1f;
+      --muted: #6b6b70;
+      --border: #e3e0d8;
+      --accent: #005293;
+      --accent-text: #ffffff;
+      --highlight: #fecb00;
+      --highlight-soft: #fff4c2;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121214;
+        --surface: #1c1c1f;
+        --text: #f2f2f5;
+        --muted: #a0a0a8;
+        --border: #2e2e33;
+        --accent: #4d9be6;
+        --accent-text: #0b1a2a;
+        --highlight: #fecb00;
+        --highlight-soft: #3a3214;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 17px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    }
+    main { max-width: 640px; margin: 0 auto; padding: 48px 16px 64px; }
+    h1 { font-size: 2.2rem; margin: 0 0 4px; letter-spacing: -0.02em; }
+    .lead { color: var(--muted); margin: 0 0 32px; }
+
+    .today {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 6px solid var(--highlight);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 32px;
+    }
+    .today .label { color: var(--muted); font-size: 0.9rem; margin: 0; }
+    .today .names { font-size: 1.8rem; font-weight: 650; margin: 2px 0 0; letter-spacing: -0.01em; }
+    .today .tomorrow { color: var(--muted); font-size: 0.95rem; margin: 8px 0 0; }
+
+    .actions { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+    .btn {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font: inherit; font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+    }
+    .btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-size: 1.05rem; }
+    .btn:hover { filter: brightness(1.05); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .url {
+      display: flex; gap: 8px; margin: 20px 0 8px;
+    }
+    .url input {
+      flex: 1; min-width: 0;
+      font: 0.85rem ui-monospace, SFMono-Regular, Menlo, monospace;
+      padding: 10px 12px;
+      border: 1px solid var(--border); border-radius: 10px;
+      background: var(--surface); color: var(--text);
+    }
+    .url .btn { padding: 10px 14px; font-size: 0.9rem; }
+    .hint { color: var(--muted); font-size: 0.9rem; margin: 0 0 40px; }
+
+    h2 { font-size: 1.2rem; margin: 0 0 12px; }
+    details {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+    summary { cursor: pointer; padding: 12px 16px; font-weight: 600; }
+    details table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+    details td { padding: 6px 16px; border-top: 1px solid var(--border); vertical-align: top; }
+    details td:first-child { width: 4.5em; color: var(--muted); font-variant-numeric: tabular-nums; }
+    tr.is-today td { background: var(--highlight-soft); }
+    tr.is-empty td:last-child { color: var(--muted); font-style: italic; }
+
+    footer { margin-top: 40px; color: var(--muted); font-size: 0.85rem; }
+    footer a { color: inherit; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Namnsdagar</h1>
+    <p class="lead">Svenska namnsdagar enligt almanackan, som en kalender du kan prenumerera på.</p>
+
+    <section class="today" aria-live="polite">
+      <p class="label" id="today-label">Idag</p>
+      <p class="names" id="today-names">…</p>
+      <p class="tomorrow" id="tomorrow"></p>
+    </section>
+
+    <div class="actions">
+      <a class="btn primary" id="apple" href="webcal://heynils.github.io/namnsdagar/namnsdagar.ics">
+        Prenumerera i Apple Kalender
+      </a>
+      <div class="row">
+        <a class="btn" id="google" href="https://calendar.google.com/calendar/r?cid=webcal%3A%2F%2Fheynils.github.io%2Fnamnsdagar%2Fnamnsdagar.ics" target="_blank" rel="noopener">Google Kalender</a>
+        <a class="btn" id="download" href="namnsdagar.ics" download>Ladda ner .ics</a>
+      </div>
+    </div>
+
+    <div class="url">
+      <input id="feed-url" type="text" readonly value="https://heynils.github.io/namnsdagar/namnsdagar.ics" aria-label="Kalenderns adress">
+      <button class="btn" id="copy" type="button">Kopiera</button>
+    </div>
+    <p class="hint">
+      Outlook och andra appar: välj ”Lägg till kalender från internet” och klistra in adressen ovan.
+      Händelserna är heldag och visas som ”ledig”, så de blockerar inte din tid.
+    </p>
+
+    <h2>Alla namnsdagar</h2>
+    <div id="months"></div>
+
+    <footer>
+      Källa: <a href="https://sv.wikipedia.org/wiki/Lista_%C3%B6ver_namnsdagar_i_Sverige_i_datumordning">Wikipedia – Lista över namnsdagar i Sverige i datumordning</a>
+      (CC BY-SA 4.0), som bygger på Svenska Akademiens namnlängd.
+      · <a href="https://github.com/heynils/namnsdagar">Källkod på GitHub</a>
+    </footer>
+  </main>
+
+  <script>
+    const MONTHS = ["januari", "februari", "mars", "april", "maj", "juni", "juli",
+      "augusti", "september", "oktober", "november", "december"];
+    const DAYS_IN_MONTH = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const NO_NAME = {
+      "01-01": "Nyårsdagen", "02-02": "Kyndelsmässodagen", "02-29": "Skottdagen",
+      "03-25": "Marie bebådelsedag", "06-24": "Johannes Döparens dag",
+      "11-01": "Allhelgonadagen", "12-25": "Juldagen",
+    };
+
+    // Dagens datum i svensk tid, oavsett var besökaren befinner sig.
+    function stockholmDate(offsetDays = 0) {
+      const d = new Date(Date.now() + offsetDays * 864e5);
+      const parts = Object.fromEntries(
+        new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Stockholm", month: "2-digit", day: "2-digit" })
+          .formatToParts(d).map(p => [p.type, p.value]));
+      return `${parts.month}-${parts.day}`;
+    }
+    const pretty = key => `${Number(key.slice(3))} ${MONTHS[Number(key.slice(0, 2)) - 1]}`;
+    const join = names => names.length > 1
+      ? names.slice(0, -1).join(", ") + " och " + names.at(-1)
+      : names[0];
+
+    // Prenumerationslänkar pekar på samma värd som sidan (fungerar även vid forkar).
+    if (location.protocol === "https:") {
+      const feed = new URL("namnsdagar.ics", location.href);
+      document.getElementById("feed-url").value = feed.href;
+      document.getElementById("apple").href = "webcal://" + feed.host + feed.pathname;
+      document.getElementById("google").href =
+        "https://calendar.google.com/calendar/r?cid=" + encodeURIComponent("webcal://" + feed.host + feed.pathname);
+    }
+
+    document.getElementById("copy").addEventListener("click", async (e) => {
+      const input = document.getElementById("feed-url");
+      try {
+        await navigator.clipboard.writeText(input.value);
+      } catch {
+        input.select();
+        document.execCommand("copy");
+      }
+      e.target.textContent = "Kopierad!";
+      setTimeout(() => (e.target.textContent = "Kopiera"), 1500);
+    });
+
+    fetch("namnsdagar.json")
+      .then(r => r.json())
+      .then(({ days }) => {
+        const today = stockholmDate();
+        const tomorrow = stockholmDate(1);
+
+        document.getElementById("today-label").textContent = `Idag, ${pretty(today)}`;
+        document.getElementById("today-names").textContent =
+          days[today] ? join(days[today]) : `Ingen namnsdag (${NO_NAME[today] ?? "–"})`;
+        document.getElementById("tomorrow").textContent =
+          days[tomorrow] ? `Imorgon: ${join(days[tomorrow])}` : `Imorgon: ingen namnsdag`;
+
+        const container = document.getElementById("months");
+        MONTHS.forEach((name, i) => {
+          const mm = String(i + 1).padStart(2, "0");
+          const details = document.createElement("details");
+          if (today.startsWith(mm)) details.open = true;
+          const summary = document.createElement("summary");
+          summary.textContent = name[0].toUpperCase() + name.slice(1);
+          const table = document.createElement("table");
+          for (let d = 1; d <= DAYS_IN_MONTH[i]; d++) {
+            const key = `${mm}-${String(d).padStart(2, "0")}`;
+            const tr = table.insertRow();
+            if (key === today) tr.className = "is-today";
+            if (!days[key]) tr.classList.add("is-empty");
+            tr.insertCell().textContent = `${d} ${name.slice(0, 3)}`;
+            tr.insertCell().textContent = days[key] ? days[key].join(", ") : (NO_NAME[key] ?? "–");
+          }
+          details.append(summary, table);
+          container.append(details);
+        });
+      })
+      .catch(() => {
+        document.getElementById("today-names").textContent = "Kunde inte läsa in namnsdagarna.";
+      });
+  </script>
+</body>
+</html>
