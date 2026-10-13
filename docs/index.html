@@ -4,221 +4,359 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Namnsdagar</title>
-  <meta name="description" content="Prenumerera på svenska namnsdagar i Apple Kalender, Google Kalender eller Outlook.">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+  <meta name="description" content="Dagens namnsdag och en kalender med alla svenska namnsdagar att prenumerera på.">
+  <meta name="theme-color" content="#f2f4f3" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1a30" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%2313284b'/><text x='50' y='72' font-family='sans-serif' font-weight='700' font-size='64' text-anchor='middle' fill='%23f2f4f3'>N</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400..700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f7f5f0;
-      --surface: #ffffff;
-      --text: #1d1d1f;
-      --muted: #6b6b70;
-      --border: #e3e0d8;
-      --accent: #005293;
-      --accent-text: #ffffff;
-      --highlight: #fecb00;
-      --highlight-soft: #fff4c2;
+      --paper: #f2f4f3;
+      --ink: #13284b;
+      --muted: #5e6b80;
+      --rule: #d3d9e1;
+      --red: #c8202f;
+      --field: #ffffff;
+      --button-text: #f2f4f3;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #121214;
-        --surface: #1c1c1f;
-        --text: #f2f2f5;
-        --muted: #a0a0a8;
-        --border: #2e2e33;
-        --accent: #4d9be6;
-        --accent-text: #0b1a2a;
-        --highlight: #fecb00;
-        --highlight-soft: #3a3214;
+        --paper: #0e1a30;
+        --ink: #eef1f6;
+        --muted: #9aa6ba;
+        --rule: #26344f;
+        --red: #ff7a7a;
+        --field: #142340;
+        --button-text: #0e1a30;
       }
     }
+
     * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
     body {
       margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font: 17px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Familjen Grotesk", system-ui, sans-serif;
+      font-size: 1.0625rem;
+      line-height: 1.5;
     }
-    main { max-width: 640px; margin: 0 auto; padding: 48px 16px 64px; }
-    h1 { font-size: 2.2rem; margin: 0 0 4px; letter-spacing: -0.02em; }
-    .lead { color: var(--muted); margin: 0 0 32px; }
-
-    .today {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-left: 6px solid var(--highlight);
-      border-radius: 14px;
-      padding: 20px 24px;
-      margin-bottom: 32px;
+    main {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: clamp(2rem, 6vw, 4.5rem) 16px 3rem;
     }
-    .today .label { color: var(--muted); font-size: 0.9rem; margin: 0; }
-    .today .names { font-size: 1.8rem; font-weight: 650; margin: 2px 0 0; letter-spacing: -0.01em; }
-    .today .tomorrow { color: var(--muted); font-size: 0.95rem; margin: 8px 0 0; }
+    @media (min-width: 40rem) {
+      main { padding-left: clamp(1.5rem, 5vw, 4rem); padding-right: clamp(1.5rem, 5vw, 4rem); }
+    }
+    a { color: inherit; text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
+    a:hover { text-decoration-thickness: 2px; }
+    :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; border-radius: 2px; }
 
-    .actions { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
-    .btn {
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      padding: 14px 20px;
-      border-radius: 12px;
-      font: inherit; font-weight: 600;
+    /* Dagens namn */
+    .today { margin-bottom: clamp(2.5rem, 7vw, 5rem); }
+    .date {
+      margin: 0;
+      font-size: clamp(1.125rem, 2.4vw, 1.5rem);
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+    }
+    .date.red-day { color: var(--red); }
+    .names {
+      margin: clamp(1rem, 3vw, 2rem) 0 0 -0.045em; /* negativ vänstermarginal: optisk linjering mot datumraden */
+      padding-bottom: 0.2em; /* plats för nedstaplar (g, j, p) */
+      font-weight: 700;
+      line-height: 0.9;
+      text-box: trim-both cap alphabetic;
+      letter-spacing: -0.045em;
+      font-size: 22vw; /* skrivs över av fitNames() */
+      overflow-wrap: anywhere;
+    }
+    .names span { display: block; width: max-content; }
+    .names.holiday { font-weight: 600; letter-spacing: -0.035em; }
+    .after {
+      margin: 0;
+      max-width: 34rem;
+      font-size: clamp(1.125rem, 2.4vw, 1.375rem);
+      color: var(--muted);
+    }
+
+    /* Prenumerera */
+    .subscribe {
+      max-width: 36rem;
+      padding-top: 1.75rem;
+      border-top: 1px solid var(--rule);
+    }
+    .subscribe p { margin: 0 0 1.25rem; }
+    .primary {
+      display: inline-block;
+      padding: 0.95rem 1.5rem;
+      border-radius: 6px;
+      background: var(--ink);
+      color: var(--button-text);
+      font-weight: 600;
+      font-size: 1.125rem;
       text-decoration: none;
+    }
+    .primary:hover { opacity: 0.9; }
+    .others {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.5rem;
+      margin: 1.25rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .others button {
+      font: inherit;
+      color: inherit;
+      background: none;
+      border: 0;
+      padding: 0;
       cursor: pointer;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
+      text-decoration: underline;
+      text-underline-offset: 0.18em;
+      text-decoration-thickness: 1px;
     }
-    .btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-size: 1.05rem; }
-    .btn:hover { filter: brightness(1.05); }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .url {
-      display: flex; gap: 8px; margin: 20px 0 8px;
-    }
-    .url input {
-      flex: 1; min-width: 0;
-      font: 0.85rem ui-monospace, SFMono-Regular, Menlo, monospace;
-      padding: 10px 12px;
-      border: 1px solid var(--border); border-radius: 10px;
-      background: var(--surface); color: var(--text);
-    }
-    .url .btn { padding: 10px 14px; font-size: 0.9rem; }
-    .hint { color: var(--muted); font-size: 0.9rem; margin: 0 0 40px; }
+    .others button:hover { text-decoration-thickness: 2px; }
+    .subscribe .hint { margin: 1rem 0 0; color: var(--muted); font-size: 0.9375rem; }
 
-    h2 { font-size: 1.2rem; margin: 0 0 12px; }
-    details {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      margin-bottom: 8px;
+    /* Sök */
+    .search {
+      margin-top: clamp(3rem, 8vw, 5.5rem);
+      max-width: 52rem;
     }
-    summary { cursor: pointer; padding: 12px 16px; font-weight: 600; }
-    details table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-    details td { padding: 6px 16px; border-top: 1px solid var(--border); vertical-align: top; }
-    details td:first-child { width: 4.5em; color: var(--muted); font-variant-numeric: tabular-nums; }
-    tr.is-today td { background: var(--highlight-soft); }
-    tr.is-empty td:last-child { color: var(--muted); font-style: italic; }
+    .search label {
+      display: block;
+      font-size: clamp(1.75rem, 5vw, 2.75rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+    }
+    .search input {
+      font: inherit;
+      color: inherit;
+      letter-spacing: inherit;
+      width: 6.5em;
+      max-width: 100%;
+      padding: 0 0.1em;
+      margin: 0 0.1em;
+      background: transparent;
+      border: 0;
+      border-bottom: 3px solid var(--ink);
+      border-radius: 0;
+    }
+    .search input::placeholder { color: var(--muted); opacity: 0.6; }
+    .search input:focus-visible { outline: none; background: var(--field); }
+    .results { margin: 1.5rem 0 0; padding: 0; list-style: none; max-width: 34rem; }
+    .results li {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0 1rem;
+      align-items: baseline;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--rule);
+    }
+    .results li:first-child { border-top: 1px solid var(--rule); }
+    .results .name { font-size: 1.25rem; font-weight: 600; }
+    .results .when { text-align: right; font-variant-numeric: tabular-nums; }
+    .results .until { display: block; color: var(--muted); font-size: 0.875rem; }
+    .results li.none { display: block; color: var(--muted); border: 0; }
 
-    footer { margin-top: 40px; color: var(--muted); font-size: 0.85rem; }
-    footer a { color: inherit; }
-    a { color: var(--accent); }
+    footer {
+      margin-top: clamp(4rem, 10vw, 7rem);
+      max-width: 40rem;
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
+    footer p { margin: 0 0 0.25rem; }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; overflow: hidden;
+      clip: rect(0 0 0 0); white-space: nowrap;
+    }
   </style>
 </head>
 <body>
   <main>
-    <h1>Namnsdagar</h1>
-    <p class="lead">Svenska namnsdagar enligt almanackan, som en kalender du kan prenumerera på.</p>
-
-    <section class="today" aria-live="polite">
-      <p class="label" id="today-label">Idag</p>
-      <p class="names" id="today-names">…</p>
-      <p class="tomorrow" id="tomorrow"></p>
+    <section class="today" aria-labelledby="today-names">
+      <p class="date" id="date"></p>
+      <h1 class="names" id="today-names"><span>Namnsdagar</span></h1>
+      <p class="after" id="after"></p>
     </section>
 
-    <div class="actions">
-      <a class="btn primary" id="apple" href="webcal://heynils.github.io/namnsdagar/namnsdagar.ics">
-        Prenumerera i Apple Kalender
-      </a>
-      <div class="row">
-        <a class="btn" id="google" href="https://calendar.google.com/calendar/r?cid=webcal%3A%2F%2Fheynils.github.io%2Fnamnsdagar%2Fnamnsdagar.ics" target="_blank" rel="noopener">Google Kalender</a>
-        <a class="btn" id="download" href="namnsdagar.ics" download>Ladda ner .ics</a>
-      </div>
-    </div>
+    <section class="subscribe" aria-label="Prenumerera">
+      <p>Få alla namnsdagar i din kalender. De visas som heldagshändelser och uppdateras automatiskt.</p>
+      <a class="primary" id="apple" href="webcal://heynils.github.io/namnsdagar/namnsdagar.ics">Prenumerera i Apple Kalender</a>
+      <ul class="others">
+        <li><a id="google" href="https://calendar.google.com/calendar/r?cid=webcal%3A%2F%2Fheynils.github.io%2Fnamnsdagar%2Fnamnsdagar.ics" target="_blank" rel="noopener">Lägg till i Google Kalender</a></li>
+        <li><button type="button" id="copy">Kopiera adressen</button></li>
+        <li><a href="namnsdagar.ics" download>Ladda ner .ics</a></li>
+      </ul>
+      <p class="hint">I Outlook och andra kalendrar: välj att lägga till en kalender från internet och klistra in adressen.</p>
+      <p class="sr-only" id="copy-status" aria-live="polite"></p>
+    </section>
 
-    <div class="url">
-      <input id="feed-url" type="text" readonly value="https://heynils.github.io/namnsdagar/namnsdagar.ics" aria-label="Kalenderns adress">
-      <button class="btn" id="copy" type="button">Kopiera</button>
-    </div>
-    <p class="hint">
-      Outlook och andra appar: välj ”Lägg till kalender från internet” och klistra in adressen ovan.
-      Händelserna är heldag och visas som ”ledig”, så de blockerar inte din tid.
-    </p>
-
-    <h2>Alla namnsdagar</h2>
-    <div id="months"></div>
+    <section class="search">
+      <label for="q">När har <input id="q" type="search" placeholder="Ingrid" autocomplete="off" autocapitalize="words" spellcheck="false"> namnsdag?</label>
+      <ul class="results" id="results" aria-live="polite"></ul>
+    </section>
 
     <footer>
-      Källa: <a href="https://sv.wikipedia.org/wiki/Lista_%C3%B6ver_namnsdagar_i_Sverige_i_datumordning">Wikipedia – Lista över namnsdagar i Sverige i datumordning</a>
-      (CC BY-SA 4.0), som bygger på Svenska Akademiens namnlängd.
-      · <a href="https://github.com/heynils/namnsdagar">Källkod på GitHub</a>
+      <p>Namnen följer Svenska Akademiens namnlängd och hämtas från <a href="https://sv.wikipedia.org/wiki/Lista_%C3%B6ver_namnsdagar_i_Sverige_i_datumordning">Wikipedia</a> (CC BY-SA 4.0).</p>
+      <p><a href="https://github.com/heynils/namnsdagar">Källkoden finns på GitHub.</a></p>
     </footer>
   </main>
 
   <script>
     const MONTHS = ["januari", "februari", "mars", "april", "maj", "juni", "juli",
       "augusti", "september", "oktober", "november", "december"];
-    const DAYS_IN_MONTH = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     const NO_NAME = {
       "01-01": "Nyårsdagen", "02-02": "Kyndelsmässodagen", "02-29": "Skottdagen",
       "03-25": "Marie bebådelsedag", "06-24": "Johannes Döparens dag",
       "11-01": "Allhelgonadagen", "12-25": "Juldagen",
     };
-
-    // Dagens datum i svensk tid, oavsett var besökaren befinner sig.
-    function stockholmDate(offsetDays = 0) {
-      const d = new Date(Date.now() + offsetDays * 864e5);
-      const parts = Object.fromEntries(
-        new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Stockholm", month: "2-digit", day: "2-digit" })
-          .formatToParts(d).map(p => [p.type, p.value]));
-      return `${parts.month}-${parts.day}`;
-    }
-    const pretty = key => `${Number(key.slice(3))} ${MONTHS[Number(key.slice(0, 2)) - 1]}`;
+    const pad = n => String(n).padStart(2, "0");
+    const keyOf = d => `${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
     const join = names => names.length > 1
       ? names.slice(0, -1).join(", ") + " och " + names.at(-1)
       : names[0];
 
+    // Dagens datum i svensk tid, som UTC-midnatt för enkel datumaritmetik.
+    function stockholmToday() {
+      const p = Object.fromEntries(
+        new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Stockholm", year: "numeric", month: "2-digit", day: "2-digit" })
+          .formatToParts(new Date()).map(x => [x.type, x.value]));
+      return new Date(Date.UTC(+p.year, +p.month - 1, +p.day));
+    }
+    const addDays = (d, n) => new Date(d.getTime() + n * 864e5);
+
+    // Röda dagar: söndagar och allmänna helgdagar.
+    function easter(y) {
+      const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4;
+      const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
+      const h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4;
+      const l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+      const month = Math.floor((h + l - 7 * m + 114) / 31), day = ((h + l - 7 * m + 114) % 31) + 1;
+      return new Date(Date.UTC(y, month - 1, day));
+    }
+    function isRedDay(d) {
+      if (d.getUTCDay() === 0) return true;
+      const k = keyOf(d), dow = d.getUTCDay();
+      if (["01-01", "01-06", "05-01", "06-06", "12-25", "12-26"].includes(k)) return true;
+      const e = easter(d.getUTCFullYear());
+      if ([-2, 1, 39].some(n => keyOf(addDays(e, n)) === k)) return true;     // långfredag, annandag påsk, Kristi himmelsfärd
+      if (dow === 6 && d.getUTCMonth() === 5 && d.getUTCDate() >= 20 && d.getUTCDate() <= 26) return true; // midsommardagen
+      if (dow === 6 && (k === "10-31" || (d.getUTCMonth() === 10 && d.getUTCDate() <= 6))) return true;   // alla helgons dag
+      return false;
+    }
+
+    function fitNames() {
+      const el = document.getElementById("today-names");
+      const spans = [...el.children];
+      el.style.fontSize = "100px";
+      const widest = Math.max(...spans.map(s => s.getBoundingClientRect().width));
+      const byWidth = 97 * el.clientWidth / widest; // lite luft mot högerkanten
+      const byHeight = (window.innerHeight * 0.55) / (spans.length * 0.92);
+      el.style.fontSize = Math.max(40, Math.min(byWidth, byHeight, 320)) + "px";
+    }
+
     // Prenumerationslänkar pekar på samma värd som sidan (fungerar även vid forkar).
+    let feedUrl = "https://heynils.github.io/namnsdagar/namnsdagar.ics";
     if (location.protocol === "https:") {
       const feed = new URL("namnsdagar.ics", location.href);
-      document.getElementById("feed-url").value = feed.href;
+      feedUrl = feed.href;
       document.getElementById("apple").href = "webcal://" + feed.host + feed.pathname;
       document.getElementById("google").href =
         "https://calendar.google.com/calendar/r?cid=" + encodeURIComponent("webcal://" + feed.host + feed.pathname);
     }
 
-    document.getElementById("copy").addEventListener("click", async (e) => {
-      const input = document.getElementById("feed-url");
+    const copyButton = document.getElementById("copy");
+    copyButton.addEventListener("click", async () => {
       try {
-        await navigator.clipboard.writeText(input.value);
+        await navigator.clipboard.writeText(feedUrl);
+        copyButton.textContent = "Adressen är kopierad";
       } catch {
-        input.select();
-        document.execCommand("copy");
+        copyButton.textContent = feedUrl;
       }
-      e.target.textContent = "Kopierad!";
-      setTimeout(() => (e.target.textContent = "Kopiera"), 1500);
+      document.getElementById("copy-status").textContent = copyButton.textContent;
+      setTimeout(() => (copyButton.textContent = "Kopiera adressen"), 2500);
     });
+
+    const fold = s => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 
     fetch("namnsdagar.json")
       .then(r => r.json())
       .then(({ days }) => {
-        const today = stockholmDate();
-        const tomorrow = stockholmDate(1);
+        const today = stockholmToday();
+        const todayKey = keyOf(today);
+        const tomorrowKey = keyOf(addDays(today, 1));
 
-        document.getElementById("today-label").textContent = `Idag, ${pretty(today)}`;
-        document.getElementById("today-names").textContent =
-          days[today] ? join(days[today]) : `Ingen namnsdag (${NO_NAME[today] ?? "–"})`;
-        document.getElementById("tomorrow").textContent =
-          days[tomorrow] ? `Imorgon: ${join(days[tomorrow])}` : `Imorgon: ingen namnsdag`;
+        const dateEl = document.getElementById("date");
+        const weekday = new Intl.DateTimeFormat("sv-SE", { weekday: "long", timeZone: "UTC" }).format(today);
+        dateEl.textContent = `${weekday[0].toUpperCase()}${weekday.slice(1)} ${today.getUTCDate()} ${MONTHS[today.getUTCMonth()]}`;
+        dateEl.classList.toggle("red-day", isRedDay(today));
 
-        const container = document.getElementById("months");
-        MONTHS.forEach((name, i) => {
-          const mm = String(i + 1).padStart(2, "0");
-          const details = document.createElement("details");
-          if (today.startsWith(mm)) details.open = true;
-          const summary = document.createElement("summary");
-          summary.textContent = name[0].toUpperCase() + name.slice(1);
-          const table = document.createElement("table");
-          for (let d = 1; d <= DAYS_IN_MONTH[i]; d++) {
-            const key = `${mm}-${String(d).padStart(2, "0")}`;
-            const tr = table.insertRow();
-            if (key === today) tr.className = "is-today";
-            if (!days[key]) tr.classList.add("is-empty");
-            tr.insertCell().textContent = `${d} ${name.slice(0, 3)}`;
-            tr.insertCell().textContent = days[key] ? days[key].join(", ") : (NO_NAME[key] ?? "–");
+        const namesEl = document.getElementById("today-names");
+        const shown = days[todayKey] ?? [NO_NAME[todayKey]];
+        namesEl.replaceChildren(...shown.map(n => Object.assign(document.createElement("span"), { textContent: n })));
+        namesEl.classList.toggle("holiday", !days[todayKey]);
+
+        const tomorrow = days[tomorrowKey]
+          ? `Imorgon har ${join(days[tomorrowKey])} namnsdag.`
+          : "Imorgon är det ingen namnsdag.";
+        document.getElementById("after").textContent =
+          (days[todayKey] ? "" : "Ingen namnsdag idag. ") + tomorrow;
+
+        fitNames();
+        document.fonts.ready.then(fitNames);
+        window.addEventListener("resize", fitNames);
+
+        // Sök: namn som börjar på söktexten först, sedan namn som innehåller den.
+        const index = Object.entries(days).flatMap(([key, names]) =>
+          names.map(name => ({ name, key, folded: fold(name) })));
+        const results = document.getElementById("results");
+
+        function untilText(key) {
+          const [m, d] = key.split("-").map(Number);
+          let next = new Date(Date.UTC(today.getUTCFullYear(), m - 1, d));
+          if (next < today) next = new Date(Date.UTC(today.getUTCFullYear() + 1, m - 1, d));
+          const n = Math.round((next - today) / 864e5);
+          return n === 0 ? "idag" : n === 1 ? "imorgon" : `om ${n} dagar`;
+        }
+
+        function render(query) {
+          const q = fold(query.trim());
+          if (!q) return results.replaceChildren();
+          const hits = index
+            .filter(x => x.folded.includes(q))
+            .sort((a, b) => (b.folded.startsWith(q) - a.folded.startsWith(q)) || a.name.localeCompare(b.name, "sv"))
+            .slice(0, 12);
+          if (!hits.length) {
+            const li = document.createElement("li");
+            li.className = "none";
+            li.textContent = `Inget namn i almanackan matchar ”${query.trim()}”.`;
+            return results.replaceChildren(li);
           }
-          details.append(summary, table);
-          container.append(details);
-        });
+          results.replaceChildren(...hits.map(({ name, key }) => {
+            const li = document.createElement("li");
+            const [m, d] = key.split("-").map(Number);
+            li.innerHTML = `<span class="name"></span><span class="when"><span class="date-text"></span><span class="until"></span></span>`;
+            li.querySelector(".name").textContent = name;
+            li.querySelector(".date-text").textContent = `${d} ${MONTHS[m - 1]}`;
+            li.querySelector(".until").textContent = untilText(key);
+            return li;
+          }));
+        }
+
+        const input = document.getElementById("q");
+        input.addEventListener("input", () => render(input.value));
+        if (input.value) render(input.value);
       })
       .catch(() => {
-        document.getElementById("today-names").textContent = "Kunde inte läsa in namnsdagarna.";
+        document.getElementById("after").textContent =
+          "Dagens namn kunde inte läsas in. Ladda om sidan för att försöka igen.";
       });
   </script>
 </body>
